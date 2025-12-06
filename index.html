@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorful Tic Tac Toe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            transition: all 0.5s ease;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 20%),
+                        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 20%),
+                        radial-gradient(circle at 40% 80%, rgba(255,255,255,0.1) 0%, transparent 20%);
+            z-index: -1;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            transition: all 0.5s ease;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            opacity: 0.9;
+            transition: all 0.5s ease;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.5s ease;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .mode-selector {
+            margin-bottom: 30px;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .mode-selector h3 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            transition: all 0.5s ease;
+        }
+        
+        .player-names {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .player-names h4 {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .name-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .name-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .name-input label {
+            min-width: 80px;
+        }
+        
+        .name-input input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.2);
+            color: inherit;
+        }
+        
+        button {
+            padding: 12px 25px;
+            margin: 8px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        .mode-btn {
+            min-width: 180px;
+        }
+        
+        .restart-btn {
+            min-width: 180px;
+            margin-top: 25px;
+        }
+        
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 90px);
+            grid-template-rows: repeat(3, 90px);
+            gap: 12px;
+            margin-bottom: 25px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+            transition: all 0.5s ease;
+        }
+        
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            user-select: none;
+        }
+        
+        .cell:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            height: 30px;
+            text-align: center;
+            padding: 5px 15px;
+            border-radius: 50px;
+            transition: all 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+        
+        .player-score {
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Popup Modal Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+        }
+        
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .popup-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.7);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .popup-content::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shine 3s infinite linear;
+        }
+        
+        @keyframes shine {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .popup-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite alternate;
+        }
+        
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-20px); }
+        }
+        
+        .popup-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .popup-message {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+        
+        .popup-winner {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            display: inline-block;
+        }
+        
+        .popup-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .popup-btn {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .popup-btn:hover {
+            transform: translateY(-5px);
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .board {
+                grid-template-columns: repeat(3, 80px);
+                grid-template-rows: repeat(3, 80px);
+            }
+            
+            .cell {
+                font-size: 40px;
+            }
+            
+            .popup-content {
+                padding: 30px 20px;
+            }
+            
+            .popup-title {
+                font-size: 2rem;
+            }
+            
+            .popup-winner {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 id="title">🌈 Colorful Tic Tac Toe 🌈</h1>
+    <div class="subtitle" id="subtitle">Every restart brings a new colorful theme!</div>
+    
+    <div class="game-container" id="game-container">
+        <div class="mode-selector" id="mode-selector">
+            <h3 id="mode-title">Select Game Mode:</h3>
+            <button class="mode-btn" id="two-player-btn" onclick="selectMode('two-player')">👥 Two Players</button>
+            <button class="mode-btn" id="one-player-btn" onclick="selectMode('one-player')">🤖 One Player (vs AI)</button>
+            
+            <div class="player-names" id="player-names">
+                <h4>Customize Player Names:</h4>
+                <div class="name-input-group">
+                    <div class="name-input">
+                        <label for="playerX">Player X:</label>
+                        <input type="text" id="playerX" placeholder="Enter name for X" value="Player X">
+                    </div>
+                    <div class="name-input">
+                        <label for="playerO">Player O:</label>
+                        <input type="text" id="playerO" placeholder="Enter name for O" value="Player O">
+                    </div>
+                    <div class="name-input" id="computer-name-input">
+                        <label for="computerName">Computer:</label>
+                        <input type="text" id="computerName" placeholder="Computer name" value="Computer">
+                    </div>
+                </div>
+                <button onclick="startGame()" id="start-game-btn">🎮 Start Game</button>
+            </div>
+        </div>
+        
+        <div id="game-area" class="hidden">
+            <div class="status" id="status"></div>
+            <div class="board" id="board"></div>
+            
+            <div class="score-board" id="score-board">
+                <div class="player-score" id="score-x"></div>
+                <div class="player-score" id="score-o"></div>
+                <div class="player-score" id="score-tie">Ties: 0</div>
+            </div>
+            
+            <button class="restart-btn" id="restart-btn" onclick="resetGame()">🔄 New Game</button>
+        </div>
+    </div>
+    
+    <!-- Popup for game results -->
+    <div class="popup-overlay" id="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-icon" id="popup-icon">🎉</div>
+            <div class="popup-title" id="popup-title">Game Over!</div>
+            <div class="popup-message" id="popup-message"></div>
+            <div class="popup-winner" id="popup-winner"></div>
+            <div class="popup-buttons">
+                <button class="popup-btn" onclick="playAgain()" id="play-again-btn">Play Again</button>
+                <button class="popup-btn" onclick="newGame()" id="new-game-btn">New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state variables
+        let currentPlayer = 'X';
+        let gameMode = '';
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let gameActive = false;
+        let scores = { X: 0, O: 0, Tie: 0 };
+        
+        // Player names
+        let playerNames = {
+            X: "Player X",
+            O: "Player O",
+            computer: "Computer"
+        };
+        
+        // Color themes (each theme has different color combinations)
+        const colorThemes = [
+            {
+                name: "Vibrant Rainbow",
+                bodyBg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                containerBg: "rgba(255, 255, 255, 0.15)",
+                cellBg: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                cellHover: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                cellX: "#FF5252",
+                cellO: "#4FC3F7",
+                textColor: "#FFFFFF",
+                button1: "linear-gradient(135deg, #FF9A9E 0%, #FAD0C4 100%)",
+                button2: "linear-gradient(135deg, #A1C4FD 0%, #C2E9FB 100%)",
+                button3: "linear-gradient(135deg, #FFD1FF 0%, #FAD0C4 100%)",
+                status: "rgba(255, 255, 255, 0.25)",
+                score: "rgba(255, 255, 255, 0.2)",
+                popupBg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+            },
+            {
+                name: "Ocean Breeze",
+                bodyBg: "linear-gradient(135deg, #89F7FE 0%, #66A6FF 100%)",
+                containerBg: "rgba(255, 255, 255, 0.2)",
+                cellBg: "linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%)",
+                cellHover: "linear-gradient(135deg, #43CBFF 0%, #9708CC 100%)",
+                cellX: "#FF6B6B",
+                cellO: "#4ECDC4",
+                textColor: "#2C3E50",
+                button1: "linear-gradient(135deg, #43CBFF 0%, #9708CC 100%)",
+                button2: "linear-gradient(135deg, #FAD961 0%, #F76B1C 100%)",
+                button3: "linear-gradient(135deg, #FFD26F 0%, #3677FF 100%)",
+                status: "rgba(255, 255, 255, 0.3)",
+                score: "rgba(255, 255, 255, 0.25)",
+                popupBg: "linear-gradient(135deg, #89F7FE 0%, #66A6FF 100%)"
+            },
+            {
+                name: "Sunset Glow",
+                bodyBg: "linear-gradient(135deg, #FF9A9E 0%, #FAD0C4 100%)",
+                containerBg: "rgba(255, 255, 255, 0.15)",
+                cellBg: "linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)",
+                cellHover: "linear-gradient(135deg, #FFECD2 0%, #FCB69F 100%)",
+                cellX: "#E74C3C",
+                cellO: "#F39C12",
+                textColor: "#2C3E50",
+                button1: "linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)",
+                button2: "linear-gradient(135deg, #A3BFFA 0%, #6991C7 100%)",
+                button3: "linear-gradient(135deg, #FFE985 0%, #FA742B 100%)",
+                status: "rgba(255, 255, 255, 0.3)",
+                score: "rgba(255, 255, 255, 0.25)",
+                popupBg: "linear-gradient(135deg, #FF9A9E 0%, #FAD0C4 100%)"
+            },
+            {
+                name: "Forest Magic",
+                bodyBg: "linear-gradient(135deg, #0BA360 0%, #3CBA92 100%)",
+                containerBg: "rgba(255, 255, 255, 0.15)",
+                cellBg: "linear-gradient(135deg, #D4FC79 0%, #96E6A1 100%)",
+                cellHover: "linear-gradient(135deg, #84FAB0 0%, #8FD3F4 100%)",
+                cellX: "#E74C3C",
+                cellO: "#3498DB",
+                textColor: "#2C3E50",
+                button1: "linear-gradient(135deg, #FFE985 0%, #FA742B 100%)",
+                button2: "linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)",
+                button3: "linear-gradient(135deg, #A3BFFA 0%, #6991C7 100%)",
+                status: "rgba(255, 255, 255, 0.3)",
+                score: "rgba(255, 255, 255, 0.25)",
+                popupBg: "linear-gradient(135deg, #0BA360 0%, #3CBA92 100%)"
+            },
+            {
+                name: "Galaxy Dream",
+                bodyBg: "linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%)",
+                containerBg: "rgba(255, 255, 255, 0.1)",
+                cellBg: "linear-gradient(135deg, #D4145A 0%, #FBB03B 100%)",
+                cellHover: "linear-gradient(135deg, #662D8C 0%, #ED1E79 100%)",
+                cellX: "#FF6B6B",
+                cellO: "#4ECDC4",
+                textColor: "#FFFFFF",
+                button1: "linear-gradient(135deg, #662D8C 0%, #ED1E79 100%)",
+                button2: "linear-gradient(135deg, #009245 0%, #FCEE21 100%)",
+                button3: "linear-gradient(135deg, #D585FF 0%, #00FFEE 100%)",
+                status: "rgba(255, 255, 255, 0.2)",
+                score: "rgba(255, 255, 255, 0.15)",
+                popupBg: "linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%)"
+            }
+        ];
+        
+        // Current theme index
+        let currentThemeIndex = 0;
+        
+        // Initialize the game
+        function initializeGame() {
+            // Apply a random theme on initial load
+            applyRandomTheme();
+            // Initialize the board
+            initializeBoard();
+        }
+        
+        // Apply a random theme
+        function applyRandomTheme() {
+            // Pick a random theme (different from current one)
+            let newThemeIndex;
+            do {
+                newThemeIndex = Math.floor(Math.random() * colorThemes.length);
+            } while (colorThemes.length > 1 && newThemeIndex === currentThemeIndex);
+            
+            currentThemeIndex = newThemeIndex;
+            const theme = colorThemes[currentThemeIndex];
+            
+            // Apply theme to the page
+            document.body.style.background = theme.bodyBg;
+            document.body.style.color = theme.textColor;
+            document.querySelector('.game-container').style.background = theme.containerBg;
+            document.querySelector('.game-container').style.color = theme.textColor;
+            document.getElementById('title').style.color = theme.textColor;
+            document.getElementById('subtitle').style.color = theme.textColor;
+            document.getElementById('mode-title').style.color = theme.textColor;
+            document.getElementById('status').style.background = theme.status;
+            document.getElementById('status').style.color = theme.textColor;
+            
+            // Apply theme to buttons
+            document.getElementById('two-player-btn').style.background = theme.button1;
+            document.getElementById('one-player-btn').style.background = theme.button2;
+            document.getElementById('restart-btn').style.background = theme.button3;
+            document.getElementById('start-game-btn').style.background = theme.button1;
+            
+            // Apply theme to score board
+            const scoreElements = document.querySelectorAll('.player-score');
+            scoreElements.forEach(el => {
+                el.style.background = theme.score;
+                el.style.color = theme.textColor;
+            });
+            
+            // Apply theme to popup
+            document.querySelector('.popup-content').style.background = theme.popupBg;
+            document.querySelector('.popup-content').style.color = theme.textColor;
+            
+            // Update board cells if they exist
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.style.background = theme.cellBg;
+                cell.style.color = theme.textColor;
+            });
+            
+            // Update subtitle with theme name
+            document.getElementById('subtitle').textContent = `Theme: ${theme.name} - Every restart brings a new colorful theme!`;
+        }
+        
+        // Initialize the board
+        function initializeBoard() {
+            const boardElement = document.getElementById('board');
+            boardElement.innerHTML = '';
+            
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.setAttribute('data-index', i);
+                cell.addEventListener('click', () => handleCellClick(i));
+                boardElement.appendChild(cell);
+            }
+            
+            // Apply current theme to cells
+            const theme = colorThemes[currentThemeIndex];
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.style.background = theme.cellBg;
+            });
+        }
+        
+        // Select game mode and show name inputs
+        function selectMode(mode) {
+            gameMode = mode;
+            
+            // Show player name inputs
+            document.getElementById('player-names').style.display = 'block';
+            
+            // Show/hide computer name input based on mode
+            if (mode === 'one-player') {
+                document.getElementById('computer-name-input').style.display = 'flex';
+            } else {
+                document.getElementById('computer-name-input').style.display = 'none';
+            }
+        }
+        
+        // Start the game with selected mode
+        function startGame() {
+            // Get player names from inputs
+            playerNames.X = document.getElementById('playerX').value || "Player X";
+            playerNames.O = document.getElementById('playerO').value || "Player O";
+            
+            if (gameMode === 'one-player') {
+                playerNames.computer = document.getElementById('computerName').value || "Computer";
+            }
+            
+            // Apply a new random theme
+            applyRandomTheme();
+            
+            gameActive = true;
+            currentPlayer = 'X';
+            board = ['', '', '', '', '', '', '', '', ''];
+            
+            document.getElementById('mode-selector').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+            document.getElementById('score-board').classList.remove('hidden');
+            
+            initializeBoard();
+            updateStatus(`${playerNames.X}'s turn (X)`);
+            
+            // Update score display
+            updateScoreDisplay();
+        }
+        
+        // Handle cell click
+        function handleCellClick(index) {
+            if (!gameActive || board[index] !== '') return;
+            
+            board[index] = currentPlayer;
+            updateBoard();
+            
+            const winner = checkWinner();
+            if (winner) {
+                if (winner === 'Tie') {
+                    showPopup("It's a Tie!", "🤝", "No one wins this round!");
+                    scores.Tie++;
+                } else {
+                    const winnerName = getPlayerName(winner);
+                    const winIcon = winner === 'X' ? '🏆' : (gameMode === 'one-player' ? '🤖' : '🏆');
+                    showPopup("Winner!", winIcon, `${winnerName} wins the game!`);
+                    
+                    if (winner === 'X') {
+                        scores.X++;
+                    } else {
+                        scores.O++;
+                    }
+                }
+                gameActive = false;
+                updateScoreDisplay();
+                return;
+            }
+            
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            
+            const statusMessage = currentPlayer === 'X' 
+                ? `${playerNames.X}'s turn (X)` 
+                : (gameMode === 'one-player' ? `${playerNames.computer}'s turn (O)` : `${playerNames.O}'s turn (O)`);
+            
+            updateStatus(statusMessage);
+            
+            if (gameMode === 'one-player' && currentPlayer === 'O' && gameActive) {
+                setTimeout(computerMove, 600);
+            }
+        }
+        
+        // Get player name based on symbol
+        function getPlayerName(symbol) {
+            if (symbol === 'X') return playerNames.X;
+            if (symbol === 'O') return gameMode === 'one-player' ? playerNames.computer : playerNames.O;
+            return "Unknown";
+        }
+        
+        // Computer's move
+        function computerMove() {
+            if (!gameActive) return;
+            
+            // Simple AI logic
+            let move;
+            
+            // 1. Check for winning move
+            move = findWinningMove('O');
+            if (move === null) {
+                // 2. Block player's winning move
+                move = findWinningMove('X');
+                if (move === null) {
+                    // 3. Take center if available
+                    if (board[4] === '') {
+                        move = 4;
+                    } else {
+                        // 4. Try to take corners
+                        const corners = [0, 2, 6, 8];
+                        const availableCorners = corners.filter(i => board[i] === '');
+                        if (availableCorners.length > 0) {
+                            move = availableCorners[Math.floor(Math.random() * availableCorners.length)];
+                        } else {
+                            // 5. Take any available edge
+                            const edges = [1, 3, 5, 7];
+                            const availableEdges = edges.filter(i => board[i] === '');
+                            if (availableEdges.length > 0) {
+                                move = availableEdges[Math.floor(Math.random() * availableEdges.length)];
+                            }
+                        }
+                    }
+                }
+            }
+            
+            board[move] = 'O';
+            updateBoard();
+            
+            const winner = checkWinner();
+            if (winner) {
+                if (winner === 'Tie') {
+                    showPopup("It's a Tie!", "🤝", "No one wins this round!");
+                    scores.Tie++;
+                } else {
+                    const winnerName = getPlayerName(winner);
+                    const winIcon = winner === 'X' ? '🏆' : '🤖';
+                    showPopup("Winner!", winIcon, `${winnerName} wins the game!`);
+                    
+                    if (winner === 'X') {
+                        scores.X++;
+                    } else {
+                        scores.O++;
+                    }
+                }
+                gameActive = false;
+                updateScoreDisplay();
+                return;
+            }
+            
+            currentPlayer = 'X';
+            updateStatus(`${playerNames.X}'s turn (X)`);
+        }
+        
+        // Helper function to find winning moves
+        function findWinningMove(player) {
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === '') {
+                    board[i] = player;
+                    if (checkWinner() === player) {
+                        board[i] = '';
+                        return i;
+                    }
+                    board[i] = '';
+                }
+            }
+            return null;
+        }
+        
+        // Check for winner
+        function checkWinner() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a];
+                }
+            }
+            
+            return board.includes('') ? null : 'Tie';
+        }
+        
+        // Update the board display
+        function updateBoard() {
+            const cells = document.querySelectorAll('.cell');
+            const theme = colorThemes[currentThemeIndex];
+            
+            cells.forEach((cell, index) => {
+                cell.textContent = board[index];
+                if (board[index] === 'X') {
+                    cell.style.color = theme.cellX;
+                    cell.style.textShadow = `0 0 10px ${theme.cellX}80`;
+                } else if (board[index] === 'O') {
+                    cell.style.color = theme.cellO;
+                    cell.style.textShadow = `0 0 10px ${theme.cellO}80`;
+                }
+                
+                // Add hover effect only to empty cells
+                if (board[index] === '') {
+                    cell.style.background = theme.cellBg;
+                    cell.onmouseenter = function() {
+                        this.style.background = theme.cellHover;
+                    };
+                    cell.onmouseleave = function() {
+                        this.style.background = theme.cellBg;
+                    };
+                } else {
+                    cell.onmouseenter = null;
+                    cell.onmouseleave = null;
+                }
+            });
+        }
+        
+        // Update the status message
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+        
+        // Update score display
+        function updateScoreDisplay() {
+            document.getElementById('score-x').textContent = `${playerNames.X}: ${scores.X}`;
+            document.getElementById('score-o').textContent = gameMode === 'one-player' 
+                ? `${playerNames.computer}: ${scores.O}` 
+                : `${playerNames.O}: ${scores.O}`;
+            document.getElementById('score-tie').textContent = `Ties: ${scores.Tie}`;
+        }
+        
+        // Show popup with game result
+        function showPopup(title, icon, message) {
+            const winner = checkWinner();
+            const winnerName = winner === 'Tie' ? "It's a Tie!" : getPlayerName(winner);
+            
+            document.getElementById('popup-icon').textContent = icon;
+            document.getElementById('popup-title').textContent = title;
+            document.getElementById('popup-message').textContent = message;
+            document.getElementById('popup-winner').textContent = winnerName;
+            
+            // Apply current theme to popup
+            const theme = colorThemes[currentThemeIndex];
+            document.querySelector('.popup-content').style.background = theme.popupBg;
+            
+            document.getElementById('popup-overlay').classList.add('active');
+        }
+        
+        // Close popup and play again with same settings
+        function playAgain() {
+            document.getElementById('popup-overlay').classList.remove('active');
+            
+            // Apply a new random theme
+            applyRandomTheme();
+            
+            // Reset board but keep scores
+            gameActive = true;
+            currentPlayer = 'X';
+            board = ['', '', '', '', '', '', '', '', ''];
+            
+            initializeBoard();
+            updateStatus(`${playerNames.X}'s turn (X)`);
+        }
+        
+        // Close popup and start a new game
+        function newGame() {
+            document.getElementById('popup-overlay').classList.remove('active');
+            resetGame();
+        }
+        
+        // Reset the game
+        function resetGame() {
+            // Apply a new random theme
+            applyRandomTheme();
+            
+            // Reset scores
+            scores = { X: 0, O: 0, Tie: 0 };
+            
+            document.getElementById('mode-selector').classList.remove('hidden');
+            document.getElementById('player-names').style.display = 'block';
+            document.getElementById('game-area').classList.add('hidden');
+        }
+        
+        // Initialize the game when page loads
+        window.onload = initializeGame;
+    </script>
+</body>
+</html>
